@@ -1,4 +1,18 @@
-Here you can find a scripts in Ansible that will perform the deployment of the Spring Petclinic application on virtual machines in the Google Cloud Platform infrastructure with an Angular frontend and a mysql database.
+Here you can find a scripts in Ansible in 3 configurations that will perform the deployment of the Spring Petclinic application on virtual machines in the Google Cloud Platform infrastructure with an Angular frontend and a mysql database.
+
+## Configurations
+
+# Configuration 1
+
+![image](https://user-images.githubusercontent.com/82798907/157537539-a326c90a-15e6-4830-83d0-15a35f71d8cf.png)
+
+# Configuration 2
+
+![image](https://user-images.githubusercontent.com/82798907/157537653-414aab01-a090-4ad7-b7b0-12f9a84a200c.png)
+
+# Configuration 3
+
+![image](https://user-images.githubusercontent.com/82798907/157537712-55e0e9bc-33d2-49fa-90a0-d05d11a37791.png)
 
 ## Usage
 1. We have created the gcp.yml script which creates machines with names written in the file machines.
