@@ -1,0 +1,13 @@
+- name: Create an instance
+  hosts: localhost
+  gather_facts: no
+  vars:
+      gcp_project: <NAZWA PROJEKTU>
+      gcp_cred_kind: serviceaccount
+      gcp_cred_file: <GCP CRED FILE>
+      zone: "europe-central2-a"
+      region: "europe-central2"
+  tasks:
+    - name: Gcp tasks
+      include_tasks: gcp-tasks.yml
+      loop: "{{ groups['machines'] }}"
