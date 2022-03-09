@@ -1,0 +1,13 @@
+# default version for 1 configuration
+[machines]
+database
+backend
+frontend
+
+# default version for 4 & 5 configuration
+# [machines]
+# master
+# slave
+# backend1
+# backend2
+# frontend
