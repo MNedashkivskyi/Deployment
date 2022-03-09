@@ -4,15 +4,15 @@ Here you can find a scripts in Ansible that will perform the deployment of the S
 1. We have created the gcp.yml script which creates machines with names written in the file machines.
 Under \ [machines \] we write the names of the machines we want to create. Default configurations (each component
 separately), are in the file machines as a formula:
-    `` bash
+    ``` bash
     # default version for 1 configuration
     [machines]
     database
     backend
     frontend
-    ``
+    ```
 
-    `` bash
+    ``` bash
     # default version for 4 & 5 configuration
     [machines]
     master
@@ -20,7 +20,7 @@ separately), are in the file machines as a formula:
     backend1
     backend2
     frontend
-    ``
+    ```
 
     To run a script for creating machines:
     * Follow the instructions in [gcp ansible documentation] (https://docs.ansible.com/ansible/latest/scenario_guides/guide_gce.html)
