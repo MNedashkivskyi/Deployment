@@ -1,0 +1,222 @@
+---
+- name: Build db
+  hosts: database
+  gather_facts: yes
+  become: yes
+  vars:
+    mysql_root_password: password
+  tasks:
+    - name: Get update
+      apt:
+        update_cache: yes
+
+    - name: install mysql-server
+      apt:
+        name: mysql-server
+        update_cache: yes
+        cache_valid_time: 3600
+        state: present
+
+    - name: install pip
+      apt:
+        name: python3-pip
+        update_cache: yes
+        state: present
+
+    - name: install python
+      pip:
+        name:
+          - PyMySQL
+        state: present
+        executable: pip3
+
+    - name: start up the mysql service
+      shell:
+        cmd: service mysql start
+
+    - name: ensure mysql is enabled to run on startup
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: update mysql root password for root account
+      mysql_user:
+        name: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        host: 'localhost'
+        password: "{{ mysql_root_password }}"
+        priv: "*.*:ALL,GRANT"
+
+    - name: Clone a repo spring-petclinic-microservices
+      git:
+        repo: https://github.com/spring-petclinic/spring-petclinic-rest.git
+        dest: ./spring-petclinic-rest
+        force: yes
+
+    - name: Fix petclinic sql scripts
+      shell:
+        cmd: sed -i "s/GRANT ALL PRIVILEGES ON petclinic.* TO pc@localhost IDENTIFIED BY 'pc';//g" ./initDB.sql
+        chdir: ./spring-petclinic-rest/src/main/resources/db/mysql
+
+    - name: Fix petclinic sql scripts
+      shell:
+        cmd: sed -i "s/^bind-address\s*\=\s*127\.0\.0\.1$/bind-address\=0.0.0.0/g" /etc/mysql/mysql.conf.d/mysqld.cnf
+
+    - name: Create tables
+      mysql_db:
+        name: petclinic
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: import
+        target: ./spring-petclinic-rest/src/main/resources/db/mysql/initDB.sql
+
+    - name: Import data
+      mysql_db:
+        name: petclinic
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        state: import
+        target: ./spring-petclinic-rest/src/main/resources/db/mysql/populateDB.sql
+
+    - name: create petclinic user
+      mysql_user:
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        name: pc
+        password: petclinic
+        host: "{{ item }}"
+        priv: "*.*:ALL,GRANT"
+        state: present
+      loop:
+        - '%'
+        - 'localhost'
+
+    - name: Reload privilege tables
+      shell:
+        cmd: mysql --user=root --password='{{ mysql_root_password }}' mysql --execute="FLUSH PRIVILEGES";
+      changed_when: False
+
+    - name: restart mysql
+      service:
+        name: mysql
+        state: restarted
+
+- name: Build Backend
+  hosts: backend
+  become: yes
+  tasks:
+    - name: Get update
+      apt:
+        update_cache: yes
+
+    - name: Install jdk
+      apt:
+        name: openjdk-11-jdk
+        update_cache: yes
+
+    - name: Install maven
+      apt:
+        name: maven
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Clone repository
+      git:
+        repo: https://github.com/spring-petclinic/spring-petclinic-rest.git
+        dest: ./spring-petclinic-rest
+        force: yes
+    
+    - name: Set backend port
+      shell: sed -i "s/server.port=..../server.port="{{ backend_port }}"/" ./spring-petclinic-rest/src/main/resources/application.properties
+
+    - name: Change into MySQL DB
+      shell: sed -i 's/=hsqldb/=mysql/' ./spring-petclinic-rest/src/main/resources/application.properties
+
+    - name: Set IP adress of DB
+      shell: sed -i "s/localhost/{{ db_internal_ip }}/" ./spring-petclinic-rest/src/main/resources/application-mysql.properties
+
+    - name: Start application
+      shell: nohup mvn spring-boot:run >/dev/null 2>&1 > log.out &
+      args:
+        chdir: ./spring-petclinic-rest
+
+
+- name: Build Frontend
+  hosts: frontend
+  become: yes
+  tasks:
+    - name: Get update
+      apt:
+        update_cache: yes
+    
+    - name: Install nginx
+      apt:
+        name: nginx
+
+    - name: Install npm
+      apt:
+        name: npm
+        update_cache: yes
+
+    - name: Install angular
+      npm:
+        name: '@angular/cli@11.0.7'
+        global: yes
+        state: present
+    
+    - name: Install n
+      npm:
+        name: n
+        global: yes
+
+    - name: Change node version
+      shell: n 12
+    
+    - name: Set path to node
+      shell: PATH="$PATH"
+
+    - name: Clone repository
+      git:
+        repo: https://github.com/spring-petclinic/spring-petclinic-angular.git
+        dest: ./spring-petclinic-angular
+        force: yes
+    
+    - name: Change rest_api_url
+      shell: sed -i "s/^.*REST_API_URL{{ ":" }} .*$/  REST_API_URL{{ ":" }} 'http:\/\/"{{ backend_ip }}":"{{ backend_port }}"\/petclinic\/api\/'/" ./spring-petclinic-angular/src/environments/environment.ts
+
+    - name: Install angular in project
+      shell:
+        cmd: npm i --save-dev @angular/cli@11.0.7
+        chdir: ./spring-petclinic-angular
+    
+    - name: Install dependencies
+      shell:
+        cmd: npm i
+        chdir: ./spring-petclinic-angular
+
+    - name: Build frontend
+      shell:
+        cmd: ng build --base-href=/petclinic/ --deploy-url=/petclinic/
+        chdir: ./spring-petclinic-angular
+
+    - name: Create directory for build files
+      file:
+        path: /usr/share/nginx/html/petclinic
+        state: directory
+    
+    - name: Copy build files into created directory
+      shell: 
+        cmd: cp -R dist/ /usr/share/nginx/html/petclinic/dist
+        chdir: ./spring-petclinic-angular
+    
+    - name: Setup Nginx configuration
+      shell: sed -i 's/http {/http {\n\tserver {\n\t\tlisten 80 default_server;\n\t\troot \/usr\/share\/nginx\/html;\n\t\tindex index.html;\n\t\tlocation \/petclinic\/ {\n\t\t\talias \/usr\/share\/nginx\/html\/petclinic\/dist\/;\n\t\t\ttry_files \$uri\$args \$uri\$args\/ \/petclinic\/index.html;\n\t\t}\n\t}/' /etc/nginx/nginx.conf
+
+    - name: Comment unused sites
+      shell: sed -e 's/^#*/#/' -i /etc/nginx/sites-enabled/default
+    
+    - name: Nginx reload
+      shell: nginx -s reload
