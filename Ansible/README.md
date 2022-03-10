@@ -27,7 +27,7 @@ separately), are in the file machines as a formula:
     ```
 
     ``` bash
-    # default version for 4 & 5 configuration
+    # default version for 2 & 3 configuration
     [machines]
     master
     slave
@@ -52,7 +52,7 @@ separately), are in the file machines as a formula:
     * 2 machines - any two components on one machine and one on a separate machine;
     * 3 machines - database, backend, frontend (everything separately).
 
-    For configurations 4 and 5 we need:
+    For configurations 2 and 3 we need:
     * 2 machines - there must be a master base, a slave base, the rest of the components on any;
     * 3 machines - there must be a master base, a slave base, the rest of the components on any;
     * 4 machines - there must be a master base, a slave base, the rest of the components on any;
@@ -84,9 +84,9 @@ separately), are in the file machines as a formula:
     
     ** ATTENTION ** We can specify the same machine for all components or combine two of them freely and specify a different one for the third.
 
-    * For configurations 4 and 5:
+    * For configurations 2 and 3:
     `` bash
-    ./script.sh --config = 4 | 5 --project = PROJECT_ID --frontend = FRONTEND --backend1 = BACKEND1 [--backend1-port = BACKEND1_PORT; default = 9966] --backend2 = BACKEND2 [--backend2- port = BACKEND2_PORT; default = 9966] --master = MASTER --slave = SLAVE
+    ./script.sh --config = 2 | 3 --project = PROJECT_ID --frontend = FRONTEND --backend1 = BACKEND1 [--backend1-port = BACKEND1_PORT; default = 9966] --backend2 = BACKEND2 [--backend2- port = BACKEND2_PORT; default = 9966] --master = MASTER --slave = SLAVE
     ``
     By substituting in the above:
     * PROJECT_ID - Google Cloud Platform project ID
