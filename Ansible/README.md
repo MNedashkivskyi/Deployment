@@ -86,7 +86,7 @@ separately), are in the file machines as a formula:
 
     * For configurations 2 and 3:
     `` bash
-    ./script.sh --config = 2 | 3 --project = PROJECT_ID --frontend = FRONTEND --backend1 = BACKEND1 [--backend1-port = BACKEND1_PORT; default = 9966] --backend2 = BACKEND2 [--backend2- port = BACKEND2_PORT; default = 9966] --master = MASTER --slave = SLAVE
+    ./script.sh --config = 4 | 5 --project = PROJECT_ID --frontend = FRONTEND --backend1 = BACKEND1 [--backend1-port = BACKEND1_PORT; default = 9966] --backend2 = BACKEND2 [--backend2- port = BACKEND2_PORT; default = 9966] --master = MASTER --slave = SLAVE
     ``
     By substituting in the above:
     * PROJECT_ID - Google Cloud Platform project ID
