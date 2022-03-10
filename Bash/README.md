@@ -33,7 +33,7 @@ There are two possible ways to run ** SpringPetclinicDeploy.sh **.
     * 2 machines - any two components on one machine and one on a separate machine;
     * 3 machines - database, backend, frontend.
 
-    For configurations 4 and 5 we need:
+    For configurations 2 and 3 we need:
     * 4 machines - master base, slave base, 2 backends on one machine, load balancer and frontend on one machine;
     * 5 machines - master base, slave base, backend 1, backend 2, load balancer and frontend on one machine;
     * 5 machines - master base, slave base, 2 backends on one machine, load balancer, frontend;
@@ -58,7 +58,7 @@ There are two possible ways to run ** SpringPetclinicDeploy.sh **.
     
      ** ATTENTION ** We can specify the same machine for all components or combine two of them freely and specify a different one for the third. 
      
-     * For configurations 4 and 5:
+     * For configurations 2 and 3:
     `` bash
     ./script.sh --config = 4 | 5 --project = PROJECT_ID --frontend = FRONTEND --backend1 = BACKEND1 [--backend1-port = BACKEND1_PORT; default = 9966] --backend2 = BACKEND2 [--backend2- port = BACKEND2_PORT; default = 9966] [--nginx = NGINX; default = FRONTEND] --master = MASTER --slave = SLAVE [| tee log.out]
     ``
